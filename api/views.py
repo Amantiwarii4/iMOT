@@ -7,7 +7,8 @@ from django.views.decorators.csrf import csrf_exempt
 from rest_framework.decorators import api_view
 from rest_framework.parsers import JSONParser
 
-from .serializers import GarageSerializer, MyTokenObtainPairSerializer, UserSerializer, AdminSerializer
+from .serializers import GarageSerializer, MyTokenObtainPairSerializer, UserSerializer, AdminSerializer, \
+    UseradminSerializer
 from .models import Garages
 from django.shortcuts import render
 from django.contrib.auth.models import User
@@ -236,3 +237,45 @@ def admin_login(request, format=json):
                 {'Status': False, 'Message': 'Wrong Credentials!',
                  })
     # return JsonResponse({"message": "Unauthorised User", })
+
+
+@csrf_exempt
+def add_user(request):
+    result = authorized(request)
+    if result['status'] == True:
+        try:
+            if request.method == 'POST':
+                S = 10
+                username = ''.join(random.choices(string.ascii_uppercase + string.digits, k=S))
+                first_name = request.POST.get('first_name')
+                last_name = request.POST.get('last_name')
+                email = request.POST.get('email')
+                password = request.POST.get('password')
+                User.objects.create(username=username, first_name=first_name, last_name=last_name, email=email,
+                                    password=password)
+                return JsonResponse({'Status': True, 'Message': 'User created successful!!'})
+        except Exception as e:
+            return JsonResponse({'Status': False, 'Exception': str(e)})
+    return JsonResponse({'Status': False, 'Message': 'Unauthorised User'})
+
+
+@csrf_exempt
+def user_list(request):
+    result = authorized(request)
+    if result['status'] == True:
+        if request.method == "POST":
+            token = request.POST.get('token')
+            try:
+                # token = request.POST.get('token')
+                user = User.objects.get(token=token)
+            except:
+                user = None
+            if user is not None:
+                user = User.objects.exclude(is_superuser=1).order_by('-id')
+                serializer = UseradminSerializer(user, many=True)
+                return JsonResponse(
+                    {'status': True, 'message': 'Users Address!', 'data': serializer.data,
+                     })
+        return JsonResponse({'status': False, 'message': 'Something went wrong!!', })
+    return JsonResponse({"message": "Unauthorised User", })
+

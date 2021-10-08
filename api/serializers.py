@@ -20,13 +20,22 @@ class GarageSerializer(serializers.ModelSerializer):
         model = Garages
         fields = '__all__'
 
+
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = '__all__'
 
+
 class AdminSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ('id','last_login','email','username','is_superuser')
+        fields = ('id', 'last_login', 'email', 'username', 'is_superuser')
+        # fields = '__all__'
+
+
+class UseradminSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ('id', 'username', 'email', 'image', 'phone', 'first_name', 'last_name', 'is_block')
         # fields = '__all__'
